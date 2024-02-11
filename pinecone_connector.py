@@ -2,11 +2,10 @@
 
 import os
 
-from pinecone import Pinecone as PineconeClient
-from pinecone import ServerlessSpec, PodSpec
 from dotenv import load_dotenv
 from langchain_pinecone import Pinecone
-
+from pinecone import Pinecone as PineconeClient
+from pinecone import PodSpec, ServerlessSpec
 
 load_dotenv()
 
