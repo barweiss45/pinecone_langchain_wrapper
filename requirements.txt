@@ -5,3 +5,6 @@ langchain-openai==0.0.5
 langchain-pinecone
 pinecone-client
 python-dotenv
+jupyter
+ipykernel
+ipywidgets
