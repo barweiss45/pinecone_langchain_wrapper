@@ -1,15 +1,13 @@
 #! /usr/bin/env python3
 
 import os
-from typing import Union, Dict, Any, List, TypeVar,
+from typing import Any, Dict, Union
 
 from dotenv import load_dotenv
 from langchain_pinecone import Pinecone
+from pinecone import IndexDescription, IndexList
 from pinecone import Pinecone as PineconeClient
 from pinecone import PodSpec, ServerlessSpec
-
-IndexDescription = TypeVar('IndexDescription', str, int)
-IndexList = TypeVar('IndexList', List)
 
 load_dotenv()
 
@@ -76,7 +74,7 @@ class PineconeConnector(object):
     def desribe_index():
         pass
 
-    def list_index(self) -> IndexList[IndexDescription]:
+    def list_index(self) -> IndexList:
         """Lists all Pinecone Indexes"""
         return [index for index in self.pc.list_indexes()]
 
