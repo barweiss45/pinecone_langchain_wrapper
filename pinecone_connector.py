@@ -54,10 +54,10 @@ class PineconeConnector(object):
         """
         if index_name in self.pc.list_indexes().names():
             return False
-        
+
         if self.PINECONE_ENV is not None:
             environment = self.PINECONE_API_KEY
-        
+
         if server_type == "pod":
             spec = PodSpec(environment,
                            pod_type=pod_type,
@@ -67,7 +67,7 @@ class PineconeConnector(object):
             spec = ServerlessSpec(cloud, region="us-west-2")  # only availabe in us-west-2
         else:
             raise ValueError("Incorrect Server type. Choose either ServerlessSpec or PodSpec")
-        
+
         self.pc.create_index(
             index_name,
             dimension,
