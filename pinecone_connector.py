@@ -1,13 +1,16 @@
 #! /usr/bin/env python3
 
 import os
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, NewType
 
 from dotenv import load_dotenv
 from langchain_pinecone import Pinecone
 from pinecone import IndexDescription, IndexList
 from pinecone import Pinecone as PineconeClient
 from pinecone import PodSpec, ServerlessSpec
+
+serverless = NewType("serverless", str)
+pod = NewType("pod", str)
 
 load_dotenv()
 
@@ -17,7 +20,7 @@ class PineconeConnector(object):
     _instance = None
 
     def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, '_instance'):
+        if cls._instance is None:
             cls._instance = super(PineconeConnector, cls).__new__(cls)
         return cls._instance
 
@@ -34,7 +37,7 @@ class PineconeConnector(object):
                      index_name: str,
                      dimension: int = 1536,
                      metric: str = "cosine",
-                     server_type: Union[ServerlessSpec, PodSpec] = PodSpec,
+                     server_type: Union[serverless, pod] = "pod",
                      cloud: str = "aws",
                      environment: str = None,
                      pod_type: str = "p1.x1",
@@ -51,14 +54,16 @@ class PineconeConnector(object):
         """
         if index_name in self.pc.list_indexes().names():
             return False
+        
         if self.PINECONE_ENV is not None:
             environment = self.PINECONE_API_KEY
-        if server_type == PodSpec:
+        
+        if server_type == "pod":
             spec = PodSpec(environment,
-                           pod_type,
+                           pod_type=pod_type,
                            pods=1,
                            metadata_config=metadata_config)
-        elif server_type == ServerlessSpec:
+        elif server_type == "serverless":
             spec = ServerlessSpec(cloud, region="us-west-2")  # only availabe in us-west-2
         else:
             raise ValueError("Incorrect Server type. Choose either ServerlessSpec or PodSpec")
@@ -66,20 +71,20 @@ class PineconeConnector(object):
         self.pc.create_index(
             index_name,
             dimension,
+            spec,
             metric,
-            spec=spec,
             )
         return True
 
-    def desribe_index():
-        pass
+    def describe_index(self, index_name: str) -> IndexDescription:
+        """Describe a Specific index"""
+        return self.pc.describe_index(index_name)
 
     def list_index(self) -> IndexList:
         """Lists all Pinecone Indexes"""
         return [index for index in self.pc.list_indexes()]
 
     def add_index():
-        Pinecone
         pass
 
     def delete_index():
