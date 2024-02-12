@@ -1,12 +1,15 @@
 #! /usr/bin/env python3
 
 import os
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, List, TypeVar,
 
 from dotenv import load_dotenv
 from langchain_pinecone import Pinecone
 from pinecone import Pinecone as PineconeClient
 from pinecone import PodSpec, ServerlessSpec
+
+IndexDescription = TypeVar('IndexDescription', str, int)
+IndexList = TypeVar('IndexList', List)
 
 load_dotenv()
 
@@ -37,7 +40,7 @@ class PineconeConnector(object):
                      cloud: str = "aws",
                      environment: str = None,
                      pod_type: str = "p1.x1",
-                     metadata_config: Dict[str, Any] = {},) -> None:
+                     metadata_config: Dict[str, Any] = {},) -> bool:
         """
         create_index Wrapper to create Pinecone Index
 
@@ -48,6 +51,8 @@ class PineconeConnector(object):
             cloud (str, optional): _description_. Defaults to "aws".
             region (str, optional): _description_. Defaults to "None".
         """
+        if index_name in self.pc.list_indexes().names():
+            return False
         if self.PINECONE_ENV is not None:
             environment = self.PINECONE_API_KEY
         if server_type == PodSpec:
@@ -66,12 +71,14 @@ class PineconeConnector(object):
             metric,
             spec=spec,
             )
+        return True
 
     def desribe_index():
         pass
 
-    def list_index():
-        pass
+    def list_index(self) -> IndexList[IndexDescription]:
+        """Lists all Pinecone Indexes"""
+        return [index for index in self.pc.list_indexes()]
 
     def add_index():
         Pinecone
