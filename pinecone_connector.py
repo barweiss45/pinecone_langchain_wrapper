@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+from typing import Union, Dict, Any
 
 from dotenv import load_dotenv
 from langchain_pinecone import Pinecone
@@ -32,8 +33,11 @@ class PineconeConnector(object):
                      index_name: str,
                      dimension: int = 1536,
                      metric: str = "cosine",
+                     server_type: Union[ServerlessSpec, PodSpec] = PodSpec,
                      cloud: str = "aws",
-                     region: str = "None") -> None:
+                     environment: str = None,
+                     pod_type: str = "p1.x1",
+                     metadata_config: Dict[str, Any] = {},) -> None:
         """
         create_index Wrapper to create Pinecone Index
 
@@ -44,14 +48,23 @@ class PineconeConnector(object):
             cloud (str, optional): _description_. Defaults to "aws".
             region (str, optional): _description_. Defaults to "None".
         """
+        if self.PINECONE_ENV is not None:
+            environment = self.PINECONE_API_KEY
+        if server_type == PodSpec:
+            spec = PodSpec(environment,
+                           pod_type,
+                           pods=1,
+                           metadata_config=metadata_config)
+        elif server_type == ServerlessSpec:
+            spec = ServerlessSpec(cloud, region="us-west-2")  # only availabe in us-west-2
+        else:
+            raise ValueError("Incorrect Server type. Choose either ServerlessSpec or PodSpec")
+        
         self.pc.create_index(
             index_name,
             dimension,
             metric,
-            spec=ServerlessSpec(
-                cloud,
-                region,
-                )
+            spec=spec,
             )
 
     def desribe_index():
