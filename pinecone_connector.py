@@ -1,11 +1,11 @@
 #! /usr/bin/env python3
 
 import os
-from typing import Any, Dict, Union, NewType
+from typing import Any, Dict, NewType, Union
 
 from dotenv import load_dotenv
 from langchain_pinecone import Pinecone
-from pinecone import IndexDescription, IndexList
+from pinecone import IndexDescription, IndexList, DescribeIndexStatsResponse
 from pinecone import Pinecone as PineconeClient
 from pinecone import PodSpec, ServerlessSpec
 
@@ -80,6 +80,10 @@ class PineconeConnector(object):
         """Describe a Specific index"""
         return self.pc.describe_index(index_name)
 
+    def describe_index_stats(self, index_name: str) -> DescribeIndexStatsResponse:
+        index = self.pc.Index(index_name)
+        return index.describe_index_stats()
+
     def list_index(self) -> IndexList:
         """Lists all Pinecone Indexes"""
         return [index for index in self.pc.list_indexes()]
@@ -87,8 +91,12 @@ class PineconeConnector(object):
     def add_index():
         pass
 
-    def delete_index():
-        pass
+    def delete_index(self, index_name: str, time_out: int | None = None):
+        try:
+            return self.pc.delete_index(index_name, time_out)
+        except TimeoutError as e:
+            # Timeout in seconds
+            raise f"{e}: Deleteing of {index_name} timed out."
 
-    def __repr__():
-        pass
+    def __repr__(self):
+        return "Pinceconnector(embeddings={self.embeddings!r}, OPENAI_API_KEY={self.OPENAI_API_KEY!r}, PINECONE_API_KEY={self.PINECONE_API_KEY!r}, PINECONE_ENV={self.PINECONE_ENV!r})"
