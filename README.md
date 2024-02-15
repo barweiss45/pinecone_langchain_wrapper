@@ -5,6 +5,7 @@ Wrapper for Pinecone Python SDK and Langchain
 ## Pinecone Python SDK
 
 The library used for the the Pinecone Connector.
+
 <https://github.com/pinecone-io/pinecone-python-client>
 
 ## Pinecone Environments
