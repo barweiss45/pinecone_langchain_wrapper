@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
+import logging
 import os
 from typing import Any, Dict, List, NewType, Optional, Union
-import logging
 
 from dotenv import load_dotenv
 from pinecone import DescribeIndexStatsResponse, IndexDescription, IndexList
@@ -24,6 +24,8 @@ load_dotenv()
 
 class PineconeConnector:
 
+    """PineconeConnect"""
+
     def __init__(self, embeddings, index_names: Optional[List[str]] = None):
         self.embeddings = embeddings
         self.index_names = index_names
@@ -44,7 +46,7 @@ class PineconeConnector:
                      region: str = "us-west-2",
                      environment: str = None,
                      pod_type: str = "p1.x1",
-                     metadata_config: Dict[str, Any] = {},) -> bool:
+                     metadata_config: Optional[Dict[str, Any]] = {},) -> bool:
         """
         create_index Wrapper to create Pinecone Index
 
