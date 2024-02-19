@@ -2,11 +2,12 @@
 
 import os
 from typing import Any, Dict, List, NewType, Optional, Union
+import logging
 
 from dotenv import load_dotenv
 from pinecone import DescribeIndexStatsResponse, IndexDescription, IndexList
 from pinecone import Pinecone as PineconeClient
-from pinecone import PodSpec, ServerlessSpec
+from pinecone import PodSpec, ServerlessSpec, exceptions
 
 """
 Provides management features to Pinecone Vectorstore
@@ -15,6 +16,8 @@ Use Langchain for adding vectors and searches
 
 serverless = NewType("serverless", str)
 pod = NewType("pod", str)
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -89,8 +92,11 @@ class PineconeConnector(object):
         return self.pc.describe_index(index_name)
 
     def describe_index_stats(self, index_name: str) -> DescribeIndexStatsResponse:
-        index = self.pc.Index(index_name)
-        return index.describe_index_stats()
+        try:
+            index = self.pc.Index(index_name)
+            return index.describe_index_stats()
+        except exceptions.NotFoundException as e:
+            logger.warning("%s: %s index not found", e, index_name)
 
     def list_index(self) -> IndexList:
         """Lists all Pinecone Indexes"""
