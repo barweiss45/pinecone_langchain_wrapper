@@ -23,13 +23,6 @@ load_dotenv()
 
 
 class PineconeConnector(object):
-    # Note may not need Singleton
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(PineconeConnector, cls).__new__(cls)
-        return cls._instance
 
     def __init__(self, embeddings, index_names: Optional[List[str]] = None):
         self.embeddings = embeddings
