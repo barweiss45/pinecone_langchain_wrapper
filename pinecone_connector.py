@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 
-class PineconeConnector(object):
+class PineconeConnector:
 
     def __init__(self, embeddings, index_names: Optional[List[str]] = None):
         self.embeddings = embeddings
