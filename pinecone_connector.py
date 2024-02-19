@@ -4,7 +4,6 @@ import logging
 import os
 from typing import Any, Dict, List, NewType, Optional, Union
 
-from dotenv import load_dotenv
 from pinecone import DescribeIndexStatsResponse, IndexDescription, IndexList
 from pinecone import Pinecone as PineconeClient
 from pinecone import PodSpec, ServerlessSpec, exceptions
@@ -18,8 +17,6 @@ serverless = NewType("serverless", str)
 pod = NewType("pod", str)
 
 logger = logging.getLogger(__name__)
-
-load_dotenv()
 
 
 class PineconeConnector:
@@ -105,4 +102,4 @@ class PineconeConnector:
             raise f"{e}: Deleteing of {index_name} timed out."
 
     def __repr__(self):
-        return "Pinceconnector(embeddings={self.embeddings!r}, OPENAI_API_KEY={self.OPENAI_API_KEY!r}, PINECONE_API_KEY={self.PINECONE_API_KEY!r}, PINECONE_ENV={self.PINECONE_ENV!r})"
+        return f"Pinceconnector(embeddings={self.embeddings!r}, OPENAI_API_KEY={self.OPENAI_API_KEY!r}, PINECONE_API_KEY={self.PINECONE_API_KEY!r}, PINECONE_ENV={self.PINECONE_ENV!r})"
