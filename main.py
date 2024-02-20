@@ -1,7 +1,5 @@
 import os
 from dotenv import load_dotenv
-from typing import Dict, Any
-
 from fastapi import FastAPI
 import logging
 from pinecone_connector import PineconeConnector, serverless, pod
