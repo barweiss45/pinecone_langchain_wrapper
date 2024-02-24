@@ -1,12 +1,14 @@
 #! /usr/bin/env python3
 
+import json
 import logging
 import os
-from typing import Any, Dict, List, NewType, Optional, Union
+from typing import List, NewType, Optional, Dict, Any
 
-from pinecone import DescribeIndexStatsResponse, IndexDescription, IndexList
 from pinecone import Pinecone as PineconeClient
 from pinecone import PodSpec, ServerlessSpec, exceptions
+
+from schema import IndexModel, IndexList, IndexStatus, Pod, Severless, IndexesResponse
 
 """
 Provides management features to Pinecone Vectorstore
@@ -15,6 +17,7 @@ Use Langchain for adding vectors and searches
 
 serverless = NewType("serverless", str)
 pod = NewType("pod", str)
+
 
 logger = logging.getLogger(__name__)
 
@@ -26,73 +29,53 @@ class PineconeConnector:
     def __init__(self, embeddings, index_names: Optional[List[str]] = None):
         self.embeddings = embeddings
         self.index_names = index_names
-        self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
         self.PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
         if not hasattr(self, 'pc'):
-            if self.OPENAI_API_KEY is None:
+            if self.PINECONE_API_KEY is None:
                 raise ValueError("Issue with Pinecone API Key. Value is None.")
             self.pc = PineconeClient(self.PINECONE_API_KEY)
 
-    def create_index(self,
-                     index_name: str,
-                     dimension: int = 1536,
-                     metric: str = "cosine",
-                     server_type: Union[serverless, pod] = "pod",
-                     cloud: str = "aws",
-                     region: str = "us-west-2",
-                     environment: str = None,
-                     pod_type: str = "p1.x1",
-                     metadata_config: Optional[Dict[str, Any]] = {},) -> bool:
-        """
-        create_index Wrapper to create Pinecone Index
+    def create_index(self, index: IndexModel) -> bool:
+        """create_index Wrapper to create Pinecone Index"""
 
-        Args:
-            index_name (str): The name of the index to create.
-            dimension (int, optional): The dimension of vectors that will be inserted in the index. Defaults to 1536.
-            metric (str, optional): Distance calculation used. Values may be "euclidean",
-                                    "cosine", and "dotproduct." Defaults to "cosine".
-            cloud (str, optional): Used for Serverless instances. Defaults to "aws".
-            region (str, optional): Location for ServerlessSpec. Defaults to "us-west-2". Note: Current us-west-2 is only available region.
-            environment (str, optional): Used in PodSpec same as region is Serverless Spec. Defaults to "None".
-            pod_type (str, optional): Used in PodSpec, Pod type and size used see documentation for specifics. Defaults to "p1.x1"
-            metadata_config (Dict[str, Any]): Metat Data Schema, Defaults to empty dictionary.)
-        """
-        if index_name in self.pc.list_indexes().names():
-            return False
+        if index.name in self.pc.list_indexes().names():
+            return json.dumps({"success": False, "message": f"{index.name} already exists."})
 
-        if server_type == "pod":
-            spec = PodSpec(environment,
-                           pod_type=pod_type,
+        if index.server_type == "pod":
+            spec = PodSpec(index.environment,
+                           pod_type=index.pod_type,
                            pods=1,
-                           metadata_config=metadata_config)
-        elif server_type == "serverless":
-            spec = ServerlessSpec(cloud, region=region)  # only availabe in us-west-2
+                           metadata_config=index.metadata_config)
+        elif index.server_type == "serverless":
+            spec = ServerlessSpec(index.cloud, region=index.region)  # only availabe in us-west-2
         else:
             raise ValueError("Incorrect Server type. Choose either ServerlessSpec or PodSpec")
 
         self.pc.create_index(
-            index_name,
-            dimension,
+            index.name,
+            index.dimension,
             spec,
-            metric,
+            index.metric,
             )
-        return True
+        return {"success": True, "message": f"{index.name} successfully."}
 
-    def describe_index(self, index_name: str) -> IndexDescription:
+    def describe_index(self, index_name: str):
         """Describe a Specific index"""
         return self.pc.describe_index(index_name)
 
-    def describe_index_stats(self, index_name: str) -> DescribeIndexStatsResponse:
+    def describe_index_stats(self, index_name: str):
         try:
             index = self.pc.Index(index_name)
             return index.describe_index_stats()
         except exceptions.NotFoundException as e:
             logger.warning("%s: %s index not found", e, index_name)
 
-    def list_index(self) -> IndexList:
+    def list_index(self):
         """Lists all Pinecone Indexes"""
-        return [index for index in self.pc.list_indexes()]
+        indexes = [index for index in self.pc.list_indexes()]
+        return indexes
+
 
     def delete_index(self, index_name: str, time_out: int | None = None):
         try:
@@ -100,6 +83,3 @@ class PineconeConnector:
         except TimeoutError as e:
             # Timeout in seconds
             raise f"{e}: Deleteing of {index_name} timed out."
-
-    def __repr__(self):
-        return f"Pinceconnector(embeddings={self.embeddings!r}, OPENAI_API_KEY={self.OPENAI_API_KEY!r}, PINECONE_API_KEY={self.PINECONE_API_KEY!r}, PINECONE_ENV={self.PINECONE_ENV!r})"
