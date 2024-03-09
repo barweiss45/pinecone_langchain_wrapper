@@ -1,14 +1,15 @@
 #! /usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import json
 import logging
 import os
-from typing import List, NewType, Optional, Dict, Any
+from typing import List, NewType, Optional
 
 from pinecone import Pinecone as PineconeClient
 from pinecone import PodSpec, ServerlessSpec, exceptions
 
-from schema import IndexModel, IndexList, IndexStatus, Pod, Severless, IndexesResponse
+from schema import IndexModel, ResponseMessage
+from utils import to_dict
 
 """
 Provides management features to Pinecone Vectorstore
@@ -20,9 +21,10 @@ pod = NewType("pod", str)
 
 
 logger = logging.getLogger(__name__)
+consoleHandler = logging.StreamHandler()
+logger.addHandler(consoleHandler)
 
-
-class PineconeConnector:
+class PineconeConnector():
 
     """PineconeConnect"""
 
@@ -40,7 +42,8 @@ class PineconeConnector:
         """create_index Wrapper to create Pinecone Index"""
 
         if index.name in self.pc.list_indexes().names():
-            return json.dumps({"success": False, "message": f"{index.name} already exists."})
+            logger.debug("pinecone_connector.create_index: %s already exists.", index.name)
+            return ResponseMessage(success=False, message=f"{index.name} already exists.")
 
         if index.server_type == "pod":
             spec = PodSpec(index.environment,
@@ -58,7 +61,8 @@ class PineconeConnector:
             spec,
             index.metric,
             )
-        return {"success": True, "message": f"{index.name} successfully."}
+        logger.info("pinecone_connector.create_index: %s", index.name)
+        return ResponseMessage(success=True, message=f"{index.name} successfully.")
 
     def describe_index(self, index_name: str):
         """Describe a Specific index"""
@@ -71,11 +75,15 @@ class PineconeConnector:
         except exceptions.NotFoundException as e:
             logger.warning("%s: %s index not found", e, index_name)
 
-    def list_index(self):
+    def list_index(self) -> ResponseMessage:
         """Lists all Pinecone Indexes"""
         indexes = [index for index in self.pc.list_indexes()]
-        return indexes
-
+        if indexes is None:
+            logger.debug("Indexes are %s", indexes)
+            logger.warning("pinecone_connector.list_index: No Indexes Found.")
+            return ResponseMessage(success=False, message="No Indexes Found.")
+        logger.debug("pinecone_connector.list_index: %s", indexes)
+        return ResponseMessage(success=True, message=to_dict(indexes))
 
     def delete_index(self, index_name: str, time_out: int | None = None):
         try:
