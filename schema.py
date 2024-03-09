@@ -1,5 +1,4 @@
-from typing import Any, Dict, NewType, Optional, Union, List
-from typing_extensions import Annotated
+from typing import Any, Dict, List, NewType, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -61,14 +60,7 @@ class Severless(BaseModel):
     region: str
 
 
-class IndexList(BaseModel):
-    name: str = Field(..., required=True)
-    dimension: int = Field(..., required=True)
-    metric: str = Field(..., required=True)
-    host: str
-    spec: Union[Pod, Severless] = Field(..., required=True)
-    status: IndexStatus
-
-
-class IndexesResponse(BaseModel):
-    indexes: List[IndexList]
+class ResponseMessage(BaseModel):
+    success: bool = Field(...)
+    # Leav as Any for now
+    message: Any = Field(...)
