@@ -8,10 +8,12 @@ from schema import ResponseMessage, IndexModel
 
 from pinecone_connector import PineconeConnector
 
-app = FastAPI(debug=True)
 logger = logging.getLogger(__name__)
 consoleHandler = logging.StreamHandler()
 logger.addHandler(consoleHandler)
+
+app = FastAPI(debug=True)
+
 
 load_dotenv()
 
