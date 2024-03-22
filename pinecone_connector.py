@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 consoleHandler = logging.StreamHandler()
 logger.addHandler(consoleHandler)
 
-class PineconeConnector():
 
+class PineconeConnector:
     """PineconeConnect"""
 
     def __init__(self, embeddings, index_names: Optional[List[str]] = None):
@@ -33,7 +33,7 @@ class PineconeConnector():
         self.index_names = index_names
         self.PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
-        if not hasattr(self, 'pc'):
+        if not hasattr(self, "pc"):
             if self.PINECONE_API_KEY is None:
                 raise ValueError("Issue with Pinecone API Key. Value is None.")
             self.pc = PineconeClient(self.PINECONE_API_KEY)
@@ -42,25 +42,33 @@ class PineconeConnector():
         """create_index Wrapper to create Pinecone Index"""
 
         if index.name in self.pc.list_indexes().names():
-            logger.debug("pinecone_connector.create_index: %s already exists.", index.name)
-            return ResponseMessage(success=False, message=f"{index.name} already exists.")
+            logger.debug(
+                "pinecone_connector.create_index: %s already exists.", index.name
+            )
+            return ResponseMessage(
+                success=False, message=f"{index.name} already exists."
+            )
 
         if index.server_type == "pod":
-            spec = PodSpec(index.environment,
-                           pod_type=index.pod_type,
-                           pods=1,
-                           metadata_config=index.metadata_config)
+            spec = PodSpec(
+                index.environment,
+                pod_type=index.pod_type,
+                pods=1,
+                metadata_config=index.metadata_config,
+            )
         elif index.server_type == "serverless":
-            spec = ServerlessSpec(index.cloud, region=index.region)  # only availabe in us-west-2
+            spec = ServerlessSpec(
+                index.cloud, region=index.region
+            )  # only availabe in us-west-2
         else:
-            raise ValueError("Incorrect Server type. Choose either ServerlessSpec or PodSpec")
+            raise ValueError("Incorrect Server type. Choose ServerlessSpec or PodSpec")
 
         self.pc.create_index(
             index.name,
             index.dimension,
             spec,
             index.metric,
-            )
+        )
         logger.info("pinecone_connector.create_index: %s", index.name)
         return ResponseMessage(success=True, message=f"{index.name} successfully.")
 

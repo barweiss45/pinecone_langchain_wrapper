@@ -7,7 +7,6 @@ pod = NewType("pod", str)
 
 
 class IndexModel(BaseModel):
-
     """
     Name:
         IndexModel
@@ -16,24 +15,37 @@ class IndexModel(BaseModel):
         The index args needed to create Index Vector Store
     """
 
-    name: str = Field(...,
-                      description="Name of Index. Required.")
-    dimension: int = Field(default=1536,
-                           description="The dimension of vectors that will be inserted in the index. Defaults to 1536.")
-    metric: str = Field(default="cosine",
-                        description="Values are 'euclidean','cosine', and 'dotproduct.' Defaults to 'cosine")
-    server_type: Union[serverless, pod] = Field(default="pod",
-                                                description="Choose between 'serverless' or 'pod' instance.")
-    cloud: str = Field(default="aws", 
-                       description="Used for Serverless instances. Defaults to 'aws'.")
-    region: str = Field(default="us-west-2", 
-                        description="Location for ServerlessSpec. Defaults to 'us-west-2'. Note: Current 'us-west-2' is only region.")
-    environment: str = Field(default=None, 
-                             description="Used in PodSpec same as region is Serverless Spec. Defaults to 'None'.")
-    pod_type: str = Field(default="p1.x1", 
-                          description="For PodSpec, used see documentation for specifics. Defaults to 'p1.x1'")
-    metadata_config: Optional[Dict[str, Any]] = Field(default=None,
-                                                      description="Metadata Schema, Defaults to empty dictionary.")
+    name: str = Field(..., description="Name of Index. Required.")
+    dimension: int = Field(
+        default=1536,
+        description="Dimension of vectors inserted into index. Default 1536.",
+    )
+    metric: str = Field(
+        default="cosine",
+        description="'euclidean','cosine', or 'dotproduct.' Default 'cosine",
+    )
+    server_type: Union[serverless, pod] = Field(
+        default="pod",
+        description="Choose 'serverless' or 'pod' instance. Default 'pod'.",
+    )
+    cloud: str = Field(
+        default="aws", description="Used for Serverless instances. Default 'aws'."
+    )
+    region: str = Field(
+        default="us-west-2",
+        description="Location for ServerlessSpec. Default 'us-west-2'.b",
+    )
+    environment: str = Field(
+        default=None,
+        description="Used for PodSpec. Default 'None'.",
+    )
+    pod_type: str = Field(
+        default="p1.x1",
+        description="Used for PodSpec. Defaults 'p1.x1'",
+    )
+    metadata_config: Optional[Dict[str, Any]] = Field(
+        default=None, description="Metadata Schema. Default {}."
+    )
 
 
 class IndexStatus(BaseModel):
